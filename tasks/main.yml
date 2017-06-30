@@ -1,0 +1,116 @@
+
+- name: app {{djangoapp_name}} | install app python and system dependencies
+  apt: name={{item}} state=present
+  with_items:
+    - python
+    - python-dev
+    - python3
+    - python3-dev
+    - python-software-properties
+    - python-pip
+    - python3-pip
+    - python3-venv
+    - python-virtualenv
+    - virtualenvwrapper
+    - build-essential
+    - libavcodec-dev
+    - libavdevice-dev
+    - libavformat-dev
+    - libavresample-dev
+    - libavutil-dev
+    - libbz2-dev
+    - libffi-dev
+    - libghc-text-icu-dev
+    - libjpeg-dev
+    - libncurses5-dev
+    - libreadline-dev
+    - libsqlite3-dev
+    - libssl-dev
+    - libswscale-dev
+    - libxml2
+    - libxml2-dev
+    - libxslt1-dev
+    - zlib1g-dev
+    - llvm
+    - node-less
+    - git
+    - mercurial
+    - curl
+    - wget
+    - redis-server
+    - pkg-config
+    - libffi-dev
+    - libffi6
+    - libpango1.0-dev
+    - libpq-dev
+    - libmysqlclient-dev
+    - mysql-client
+
+- name: app {{djangoapp_name}} | create user group
+  group: name={{djangoapp_user}} state=present
+
+- name: app {{djangoapp_name}} | create user & home
+  user: name={{djangoapp_user}} home={{djangoapp_home}} group={{djangoapp_user}} append=yes
+
+- name: app {{djangoapp_name}} | create assets folder
+  file: path={{djangoapp_home}}/assets state=directory owner={{djangoapp_user}} group={{djangoapp_user}} mode=0755
+
+- name: app {{djangoapp_name}} | add www-data
+  user: name=www-data group={{djangoapp_user}} append=yes
+
+- name: app {{djangoapp_name}} | get source via git
+  git: repo="{{djangoapp_repo}}" dest="{{djangoapp_src}}" version="{{djangoapp_version|default('master')}}" force=yes update=yes
+  become_user: "{{ djangoapp_user }}"
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | create production .env file
+  template: src=templates/env.j2  dest="{{djangoapp_src}}/.env" mode=0640 force=no
+  become_user: "{{ djangoapp_user }}"
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | create virtualenv
+  command: "/usr/bin/pyvenv {{djangoapp_venv}}"
+  become_user: "{{ djangoapp_user }}"
+  args:
+    creates: "{{djangoapp_venv}}"
+
+- name: app {{djangoapp_name}} | upgrade pip and wheel
+  pip: name="{{item.name}}" state=present executable="{{djangoapp_venv}}/bin/pip"
+  become_user: "{{ djangoapp_user }}"
+  with_items:
+    - { name: 'pip', version: 9.0.1}
+    - { name: 'wheel', version: 0.29.0}
+    - { name: 'setuptools', version: 32.3.1}
+    - { name: 'envdir' }
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | install project requirements
+  pip:
+    requirements: "{{djangoapp_src}}/requirements.txt"
+    executable: "{{djangoapp_venv}}/bin/pip"
+  become_user: "{{ djangoapp_user }}"
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | install src
+  shell: "{{djangoapp_venv}}/bin/pip install -e {{djangoapp_src}}"
+  become_user: "{{ djangoapp_user }}"
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | collectstatic
+  shell: "{{djangoapp_venv}}/bin/manage.py collectstatic --noinput"
+  become_user: "{{ djangoapp_user }}"
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | db migrate
+  shell: "{{djangoapp_venv}}/bin/manage.py migrate --noinput"
+  become_user: "{{ djangoapp_user }}"
+  tags: ['update']
+
+- name: app {{djangoapp_name}} | copy project-specific ini file for uWSGI
+  template: src=templates/uwsgi.ini.j2  dest="/etc/uwsgi-emperor/vassals/{{djangoapp_name}}.ini"
+
+- name: app {{djangoapp_name}} | reload uwsgi apps
+  file:
+    path: "/tmp/{{djangoapp_name}}.reload"
+    state: touch
+  tags: ['update']

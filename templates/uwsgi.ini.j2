@@ -1,0 +1,32 @@
+[uwsgi]
+
+master          = true
+processes       = {{djangoapp_uwsgiproc|default:10}}
+chmod_socket    = 664
+socket          = /tmp/{{djangoapp_name}}.sock
+touch-reload    = /tmp/{{djangoapp_name}}.reload
+vacuum          = true
+enable-threads  = true
+thunder-lock    = true
+logger          = syslog:{{djangoapp_name}}
+
+uid = {{djangoapp_user}}
+gid = {{djangoapp_user}}
+
+# Django-related settings
+# the base directory (full path)
+chdir           = {{djangoapp_src}}
+module          = {{djangoapp_name}}.wsgi
+home            = {{djangoapp_venv}}
+
+env             = LC_ALL=en_US.UTF-8
+env             = LC_LANG=en_US.UTF-8
+env             = LANG=en_US.UTF-8
+{% if djangoapp_newrelic %}
+env             = NEWRELIC={{djangoapp_home}}/newrelic.ini
+{% endif %}
+
+{% if djangoapp_celery_enabled %}
+attach-daemon = {{djangoapp_venv}}/bin/celery worker -A {{djangoapp_name}} -E -B -S django
+attach-daemon = {{djangoapp_venv}}/bin/celery -A burg flower
+{% endif %}

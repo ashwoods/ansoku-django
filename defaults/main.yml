@@ -1,0 +1,12 @@
+---
+# required variables:
+# djangoapp_name
+# djangoapp_repo
+
+djangoapp_home: "/srv/{{djangoapp_name}}"
+djangoapp_user: "{{djangoapp_name}}"
+
+djangoapp_venv: "{{djangoapp_home}}/venv"
+djangoapp_src: "{{djangoapp_home}}/src"
+
+djangoapp_uwsgiproc: 10

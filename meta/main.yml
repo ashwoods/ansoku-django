@@ -1,5 +1,1 @@
 allow_duplicates: yes
-dependencies: 
-  - jdauphant.nginx
-  - thefinn93.letsencrypt 
-  - ANXS.postgresql
