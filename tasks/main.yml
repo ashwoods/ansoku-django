@@ -1,7 +1,10 @@
+- name: app {{djangoapp_name}} | include release-specific vars
+  include_vars: "vars/{{ ansible_distribution_release }}.yml"
 
 - name: app {{djangoapp_name}} | install app python and system dependencies
-  apt: name={{item}} state=present
-  with_items:
+  apt: name={{ items|join(",") }} state=present
+  vars:
+    items:
     - python
     - python-dev
     - python3
@@ -43,8 +46,8 @@
     - libffi6
     - libpango1.0-dev
     - libpq-dev
-    - libmysqlclient-dev
     - mysql-client
+    - "{{ libmysql_client_dev }}"
 
 - name: app {{djangoapp_name}} | create user group
   group: name={{djangoapp_user}} state=present
