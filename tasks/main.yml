@@ -64,7 +64,11 @@
   tags: ['update']
 
 - name: app {{djangoapp_name}} | create production .env file
-  template: src=templates/env.j2  dest="{{djangoapp_src}}/.env" mode=0640 force=no
+  template:
+    src:   "{{ djangoapp_env_template }}"
+    dest:  "{{ djangoapp_src }}/.env"
+    mode:  "0640"
+    force: no
   become_user: "{{ djangoapp_user }}"
   tags: ['update']
 
