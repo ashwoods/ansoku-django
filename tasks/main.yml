@@ -2,8 +2,9 @@
   include_vars: "vars/{{ ansible_distribution_release }}.yml"
 
 - name: app {{djangoapp_name}} | install app python and system dependencies
-  apt: name={{item}} state=present
-  with_items:
+  apt: name={{ items|join(",") }} state=present
+  vars:
+    items:
     - python
     - python-dev
     - python3
