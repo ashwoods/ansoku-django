@@ -1,7 +1,7 @@
 [uwsgi]
 
 master          = true
-processes       = {{djangoapp_uwsgiproc|default:10}}
+processes       = {{djangoapp_uwsgiproc}}
 chmod_socket    = 664
 socket          = /tmp/{{djangoapp_name}}.sock
 touch-reload    = /tmp/{{djangoapp_name}}.reload
