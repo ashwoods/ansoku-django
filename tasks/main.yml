@@ -68,7 +68,7 @@
     src:   "{{ djangoapp_env_template }}"
     dest:  "{{ djangoapp_src }}/.env"
     mode:  "0640"
-    force: no
+    force: "{{ djangoapp_env_force }}"
   become_user: "{{ djangoapp_user }}"
   tags: ['update']
 
