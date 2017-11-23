@@ -1,1 +1,3 @@
-libmysql_client_dev: libmysqlclient-dev
+extra_packages:
+- libmysqlclient-dev
+- python-software-properties

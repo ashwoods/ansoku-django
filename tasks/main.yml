@@ -8,7 +8,6 @@
     - python-dev
     - python3
     - python3-dev
-    - python-software-properties
     - python-pip
     - python3-pip
     - python3-venv
@@ -46,7 +45,10 @@
     - libpango1.0-dev
     - libpq-dev
     - mysql-client
-    - "{{ libmysql_client_dev }}"
+
+- name: app {{djangoapp_name}} | install release-specific dependencies
+  apt: name={{item}} state=present
+  with_items: "{{ extra_packages }}"
 
 - name: app {{djangoapp_name}} | create user group
   group: name={{djangoapp_user}} state=present

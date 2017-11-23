@@ -1,1 +1,2 @@
-libmysql_client_dev: libmariadbclient-dev-compat
+extra_packages:
+- libmariadbclient-dev-compat
