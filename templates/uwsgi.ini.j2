@@ -1,7 +1,7 @@
 [uwsgi]
 
 master          = true
-processes       = {{djangoapp_uwsgiproc|default:10}}
+processes       = {{djangoapp_uwsgiproc}}
 chmod_socket    = 664
 socket          = /tmp/{{djangoapp_name}}.sock
 touch-reload    = /tmp/{{djangoapp_name}}.reload
@@ -28,5 +28,5 @@ env             = NEWRELIC={{djangoapp_home}}/newrelic.ini
 
 {% if djangoapp_celery_enabled %}
 attach-daemon = {{djangoapp_venv}}/bin/celery worker -A {{djangoapp_name}} -E -B -S django
-attach-daemon = {{djangoapp_venv}}/bin/celery -A burg flower
+attach-daemon = {{djangoapp_venv}}/bin/celery -A {{djangoapp_name}} flower
 {% endif %}
