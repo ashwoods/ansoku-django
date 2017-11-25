@@ -11,4 +11,7 @@ djangoapp_src: "{{djangoapp_home}}/src"
 
 djangoapp_uwsgiproc: 10
 
+djangoapp_env_template: templates/env.j2
+djangoapp_env_force:    no
 djangoapp_newrelic: ~
+
